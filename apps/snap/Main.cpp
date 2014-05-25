@@ -32,6 +32,8 @@ Revision History:
 #include "exit.h"
 #include "SeedSequencer.h"
 
+#include "LandauVishkin.h"
+
 
 using namespace std;
 
@@ -51,32 +53,28 @@ static void usage()
 
 int main(int argc, const char **argv)
 {
-    printf("Welcome to SNAP version %s.\n\n", SNAP_VERSION);
+    //InitializeSeedSequencers();  // TODO: Do I need this
 
-    InitializeSeedSequencers();
+    LandauVishkin<1>* lv = new LandauVishkin<>;
 
-    if (argc < 2) {
-        usage();
-    } else if (strcmp(argv[1], "index") == 0) {
-        GenomeIndex::runIndexer(argc - 2, argv + 2);
-    } else if (strcmp(argv[1], "single") == 0 || strcmp(argv[1], "paired") == 0) {
-        for (int i = 1; i < argc; /* i is increased below */) {
-            unsigned nArgsConsumed;
-            if (strcmp(argv[i], "single") == 0) {
-                SingleAlignerContext single;
-                single.runAlignment(argc - (i + 1), argv + i + 1, SNAP_VERSION, &nArgsConsumed);
-            } else if (strcmp(argv[i], "paired") == 0) {
-                PairedAlignerContext paired;
-                paired.runAlignment(argc - (i + 1), argv + i + 1, SNAP_VERSION, &nArgsConsumed);
-            } else {
-                fprintf(stderr, "Invalid command: %s\n\n", argv[i]);
-                usage();
-            }
-            _ASSERT(nArgsConsumed > 0);
-            i += nArgsConsumed + 1;  // +1 for single or paired
-        }
-    } else {
-        fprintf(stderr, "Invalid command: %s\n\n", argv[1]);
-        usage();
-    }
+    const char* text = "ACTGACACACGGGCCC";
+    int textLen = 16;
+    const char* pattern = "TGACACAGGGC";
+    int patternLen = 11;
+
+    /**
+     * They are calculating SHW here!
+     * Compute the edit distance between two strings, if it is <= k, or return -1 otherwise.
+     * int computeEditDistance(
+     *       const char* text,
+     *       int textLen,
+     *       const char* pattern,
+     *       int patternLen,
+     *       int k)
+    **/
+    int ed = lv->computeEditDistance(text, textLen, pattern, patternLen, 10);
+    printf("%d\n", ed);
+
+    int ed2 = lv->computeEditDistance(text, textLen, text, textLen, 5);
+    printf("%d\n", ed2);
 }
